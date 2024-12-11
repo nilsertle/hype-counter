@@ -1,23 +1,27 @@
-'use server'
+"use server";
 
-import { promises as fs } from 'fs'
-import path from 'path'
+import { neon } from "@neondatabase/serverless";
 
-const counterFile = path.join(process.cwd(), 'counter.txt')
+// Connect to the Neon database
+const sql = neon(`${process.env.DATABASE_URL}`);
 
 export async function getCount() {
-    try {
-        const count = await fs.readFile(counterFile, 'utf-8')
-        return parseInt(count) || 0
-    } catch {
-        await fs.writeFile(counterFile, '0')
-        return 0
-    }
+  try {
+    const result = await sql("SELECT count FROM counter LIMIT 1");
+    return result[0]?.count || 0;
+  } catch (error) {
+    console.error("Error fetching count:", error);
+    return 0;
+  }
 }
 
 export async function incrementCount() {
-    const currentCount = await getCount()
-    const newCount = currentCount + 1
-    await fs.writeFile(counterFile, newCount.toString())
-    return newCount
+  try {
+    // Increment the count in the 'counter' table
+    await sql("UPDATE counter SET count = count + 1"); // Increment the count
+    return await getCount(); // Return the new count after incrementing
+  } catch (error) {
+    console.error("Error incrementing count:", error);
+    throw new Error("Could not increment count"); // Handle error as needed
+  }
 }
