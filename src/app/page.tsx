@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCount, incrementCount } from "./actions.ts";
+import { getCount, incrementCount } from "./actions";
 
 export default function Home() {
   const [count, setCount] = useState(0);
